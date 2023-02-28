@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <title>Document</title>
+</head>
+<body class="bg-light">
+
+    <div class="container my-5 w-50">
+        <div class="bg-white rounded-4">
+            <div class="modal-header p-5 pb-4 border-bottom-0">
+                <!-- <h1 class="modal-title fs-5" >Modal title</h1> -->
+                <h2 class="fw-bold mb-0 fs-4">Single Notification</h2>
+              </div>
+        
+              <div class="modal-body p-5 pt-0">
+                <form onsubmit="sendNotification(event)">
+                  <div class="input-group mb-3">
+                      <span class="input-group-text" id="basic-addon1">Title</span>
+                      <input type="text" class="form-control" aria-label="Username" aria-describedby="basic-addon1" name="title">
+                    </div>
+                    <div class="input-group mb-3">
+                      <span class="input-group-text" id="basic-addon1">Message</span>
+                      <input type="text" class="form-control" aria-label="Username" aria-describedby="basic-addon1" name="message">
+                    </div>
+                    <div class="input-group mb-3">
+                      <span class="input-group-text" id="basic-addon1">Severity</span>
+                      <select class="form-select form-select-sm" aria-label=".form-select-sm example" name="severity">
+                          <option selected=""></option>
+                          <option value="Info">Info</option>
+                          <option value="Warning">Warning</option>
+                          <option value="Error">Error</option>
+                          <option value="Fatal">Fatal</option>
+                        </select>
+                    </div>
+                  <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit">Send Notification</button>
+                </form>
+                <hr class="my-4">
+                <h2 class="fw-bold mb-0 fs-4">Multi Notifications</h2>
+                <div class="d-flex justify-content-center my-4">
+                    <form class="card p-2 w-100">
+                        <div class="input-group">
+                        <span class="input-group-text" id="basic-addon1">Amount</span>
+                          <input type="text" class="form-control">
+                          <button type="submit" class="btn btn-primary">Send</button>
+                        </div>
+                      </form>
+                </div>
+                <hr class="my-4">
+                
+                <div class="p-5">
+                    <h2 class="fw-bold mb-0 fs-4 mb-4">Notifications:</h2>
+                    <div id="notifications-list">
+                        
+                    </div>
+                </div>
+              </div>
+        </div>
+    </div>
+
+
+
+    <script>
+
+        const notificationsList = document.getElementById('notifications-list');
+
+        fetch('http://localhost:3000/notifications')
+        .then(response => response.json()) // Antwort als JSON parsen
+        .then(data => {
+            console.log(data);
+            data.forEach(notification => {
+            const notificationElement = document.createElement('div');
+            notificationElement.innerHTML = `
+            <div class="alert alert-dark alert-dismissible fade show" role="alert">
+                <b class="fs-4">${notification.severity}</b><br> <p class="fs-5">${notification.title}</p> ${notification.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            `;
+            notificationsList.appendChild(notificationElement);
+            });
+        })
+        .catch(error => {
+            console.error('Failed to fetch notifications:', error);
+        });
+
+        function generateUniqueId() {
+            const timestamp = Date.now().toString(); // Aktuelle Zeit als String
+            const random = Math.floor(Math.random() * 1000); // Zufällige Zahl zwischen 0 und 999
+            const uniqueId = timestamp + random.toString().padStart(3, '0'); // Kombinieren von Zeit und Zufallszahl
+            
+            return uniqueId.substring(0, 10); // Rückgabe der ersten 10 Stellen
+          }
+          
+          console.log(generateUniqueId()); // Beispiel-Ausgabe: "1646092945"
+          
+
+
+        function sendNotification(event) {
+          event.preventDefault();
+          const form = event.target;
+          const formData = new FormData(form);
+          const queryString = new URLSearchParams(formData).toString();
+          let title = queryString.split("&")[0].split("=")[1];
+          let message = queryString.split("&")[1].split("=")[1];
+          let severity = queryString.split("&")[2].split("=")[1];
+          
+          if(title!="" && message!="" && severity!=""){
+            const url = `http://localhost:3000/send?id=${generateUniqueId()}&${queryString}`;
+        
+          fetch(url)
+            .then(response => {
+              console.log('Notification sent successfully!');
+              // Handle success response here
+              window.location = "/"
+            })
+            .catch(error => {
+              console.error('Failed to send notification:', error);
+              // Handle error response here
+            });
+          }
+        }
+        </script>
+
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+</body>
+</html>

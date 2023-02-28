@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const path = require("path");
 
 app.use(cors());
 let notifications = [];
@@ -37,77 +38,78 @@ app.get("/stream", (req, res) => {
   });
 });
 
-app.get("/info", (req, res) => {
-  const info = { message: "This is some info" };
-  res.json(info);
+app.get("/notifications", (req, res) => {
+  res.json(notifications);
+});
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "/index.html"));
 });
 
 app.get("/send", (req, res) => {
-  const id = req.query.message;//c37f4d0b-ea92-4cfc-9258-8cfc3e4da6a8
-  if (!id) {
+  const { id, title, message, severity } = req.query;
+  if (!title || !message || !severity) {
     res.status(400).send("Bad Request: Message parameter is missing");
     return;
   }
   let notification = {
-    "identifier": id,
-    "type": "SimulationNotification",
-    "title": "Titlehier",
-    "message": "MessageHier",
-    "severity": "Warning",
-    "created": "2023-02-27T12:39:39.8956872+00:00",
-    "acknowledged": null,
-    "isAcknowledgable": true,
-    "properties": {
-      "displayName": "SimulationNotification",
-      "identifier": "SimulationNotification",
-      "description": null,
-      "value": {
-        "type": "Class",
-        "unitType": "None",
-        "current": "SimulationNotification",
-        "default": "SimulationNotification",
-        "possible": null,
-        "isReadOnly": false
+    identifier: id,
+    type: "SimulationNotification",
+    title: title,
+    message: message,
+    severity: severity,
+    created: "2023-02-27T12:39:39.8956872+00:00",
+    acknowledged: null,
+    isAcknowledgable: true,
+    properties: {
+      displayName: "SimulationNotification",
+      identifier: "SimulationNotification",
+      description: null,
+      value: {
+        type: "Class",
+        unitType: "None",
+        current: "SimulationNotification",
+        default: "SimulationNotification",
+        possible: null,
+        isReadOnly: false,
       },
-      "validation": {
-        "minimum": -1.7976931348623157E+308,
-        "maximum": 1.7976931348623157E+308,
-        "regex": null,
-        "isRequired": false
+      validation: {
+        minimum: -1.7976931348623157e308,
+        maximum: 1.7976931348623157e308,
+        regex: null,
+        isRequired: false,
       },
-      "subEntries": [
+      subEntries: [
         {
-          "displayName": "Name",
-          "identifier": "Name",
-          "description": null,
-          "value": {
-            "type": "String",
-            "unitType": "None",
-            "current": "LÃ¶tmaschine-1",
-            "default": null,
-            "possible": null,
-            "isReadOnly": false
+          displayName: "Name",
+          identifier: "Name",
+          description: null,
+          value: {
+            type: "String",
+            unitType: "None",
+            current: "LÃ¶tmaschine-1",
+            default: null,
+            possible: null,
+            isReadOnly: false,
           },
-          "validation": {
-            "minimum": -1.7976931348623157E+308,
-            "maximum": 1.7976931348623157E+308,
-            "regex": null,
-            "isRequired": false
+          validation: {
+            minimum: -1.7976931348623157e308,
+            maximum: 1.7976931348623157e308,
+            regex: null,
+            isRequired: false,
           },
-          "subEntries": [],
-          "prototypes": []
-        }
+          subEntries: [],
+          prototypes: [],
+        },
       ],
-      "prototypes": []
+      prototypes: [],
     },
-    "sender": "19",
-    "source": "ResourceManager"
-  }
+    sender: "19",
+    source: "ResourceManager",
+  };
 
   notifications.push(notification);
   let myString = "data: " + JSON.stringify(notifications) + "\n\n";
-
-
 
   res.app.get("streamConnections").forEach((stream) => {
     stream.write(myString);
