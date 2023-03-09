@@ -20,7 +20,8 @@ app.get("/stream", (req, res) => {
   res.setHeader("Connection", "keep-alive");
 
   // Send initial message
-  //res.write('data: { "message": "Connected" }\n\n');
+  let myString = "data: " + JSON.stringify(notifications) + "\n\n";
+  res.write(myString);
 
   // Send a message every 5 seconds
   // const intervalId = setInterval(() => {
@@ -52,13 +53,31 @@ app.get("/send", (req, res) => {
     res.status(400).send("Bad Request: Message parameter is missing");
     return;
   }
+
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * -1; // in Minuten, um UTC zu konvertieren
+
+  const formattedDate = now.toISOString()
+    .replace(/\.\d+/, '') // entfernt Bruchteile von Sekunden
+    .replace(/Z$/, '') // entfernt UTC-Offset-Zeichen
+
+  const formattedOffset = (offset >= 0 ? '+' : '-') +
+    ('00' + Math.abs(offset / 60)).slice(-2) + ':' +
+    ('00' + Math.abs(offset % 60)).slice(-2);
+
+  const result = formattedDate + formattedOffset;
+  let date = new Date(result);
+
+  date.setHours(date.getHours() + 1);
+  let new_date_string = date.toISOString();
+  console.log(new_date_string);
   let notification = {
     identifier: id,
     type: "SimulationNotification",
     title: title,
     message: message,
     severity: severity,
-    created: "2023-02-27T12:39:39.8956872+00:00",
+    created: new_date_string,
     acknowledged: null,
     isAcknowledgable: true,
     properties: {
